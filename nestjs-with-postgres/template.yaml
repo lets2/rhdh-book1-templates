@@ -97,7 +97,7 @@ spec:
         allowedHosts:
           - github.com
         description: This is ${{ parameters.description }}
-        repoUrl: ${{ parameters.repoUrl }}       
+        repoUrl: ${{ parameters.repoName }}       
 #        repoUrl: lets2/${{parameters.repoName}}
 #        description: ${{parameters.description}}
 #        sourcePath: ./source
