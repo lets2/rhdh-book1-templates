@@ -32,6 +32,17 @@ spec:
           type: string
           description: If necessary, provide a GitHub PAT for authentication
           ui:widget: password
+      - title: Choose a location
+        required:
+          - repoUrl
+        properties:
+          repoUrl:
+            title: Repository Location
+            type: string
+            ui:field: RepoUrlPicker
+            ui:options:
+              allowedHosts:
+                - github.com
     - title: Provide information about the new component
       required:
         - cluster_id
@@ -90,21 +101,15 @@ spec:
           namespace: ${{parameters.namespace}}
           component_id: ${{parameters.namespace}}-${{parameters.application_id}}
           description: ${{parameters.description}}
-    - id: publishSource
-      name: Publishing to GitHub Repository
+    - id: publish
+      name: Publish
       action: publish:github
       input:
         allowedHosts:
           - github.com
         description: This is ${{ parameters.description }}
-        repoUrl: ${{ parameters.repoName }}       
-#        repoUrl: lets2/${{parameters.repoName}}
-#        description: ${{parameters.description}}
-#        sourcePath: ./source
-#        defaultBranch: main
-#        protectDefaultBranch: false
-#        repoVisibility: public
-#        token: ${{parameters.pat}}
+        repoUrl: ${{ parameters.repoUrl }}
+        
     - id: templateGitops
       name: Generating the deployment resources and artefacts
       action: fetch:template
