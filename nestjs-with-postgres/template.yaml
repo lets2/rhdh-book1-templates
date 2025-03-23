@@ -94,13 +94,17 @@ spec:
       name: Publishing to GitHub Repository
       action: publish:github
       input:
-        repoUrl: lets2/${{parameters.repoName}}
-        description: ${{parameters.description}}
-        sourcePath: ./source
-        defaultBranch: main
-        protectDefaultBranch: false
-        repoVisibility: public
-        token: ${{parameters.pat}}
+        allowedHosts:
+          - github.com
+        description: This is ${{ parameters.description }}
+        repoUrl: ${{ parameters.repoUrl }}       
+#        repoUrl: lets2/${{parameters.repoName}}
+#        description: ${{parameters.description}}
+#        sourcePath: ./source
+#        defaultBranch: main
+#        protectDefaultBranch: false
+#        repoVisibility: public
+#        token: ${{parameters.pat}}
     - id: templateGitops
       name: Generating the deployment resources and artefacts
       action: fetch:template
