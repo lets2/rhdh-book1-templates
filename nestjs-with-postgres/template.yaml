@@ -9,28 +9,29 @@ metadata:
     - nestjs
     - database
     - postgresql
-    - book
 spec:
-  owner: rhdh-idp-book-authors
+  owner: lets2
   type: service
 
   parameters:
-    - title: Provide information about the GitLab location
+    - title: Provide information about the GitHub repository
       required:
-        - gitlabGroup
+        - repoName
       properties:
-        gitlabGroup:
-          title: Repo Owner
+        repoName:
+          title: Repository Name
           type: string
-          description: GitLab Organization
-          default: development
-          enum:
-            - development
+          description: Name of the repository in GitHub
         description:
           title: Description
           type: string
           description: Help others understand what this component is for
           default: Creates a NestJS Service together with a PostgreSQL database
+        pat:
+          title: Personal Access Token (PAT) (optional)
+          type: string
+          description: If necessary, provide a GitHub PAT for authentication
+          ui:widget: password
     - title: Provide information about the new component
       required:
         - cluster_id
@@ -67,7 +68,7 @@ spec:
         image_host:
           title: Image Host
           type: string
-          description: Host for storing image (defaults to openshift internal)
+          description: Host for storing image (defaults to OpenShift internal)
           default: image-registry.openshift-image-registry.svc:5000
         image_tag:
           title: Image Tag
@@ -82,24 +83,24 @@ spec:
         url: ./skeleton
         targetPath: ./source
         values:
-          git_host: gitlab-gitlab${{parameters.cluster_id}}
-          gitlabGroup: ${{parameters.gitlabGroup}}
-          repoName: ${{parameters.namespace}}-${{parameters.application_id}}
+          github_user: lets2
+          repoName: ${{parameters.repoName}}
           owner: ${{parameters.owner}}
           cluster_id: ${{parameters.cluster_id}}
           namespace: ${{parameters.namespace}}
           component_id: ${{parameters.namespace}}-${{parameters.application_id}}
           description: ${{parameters.description}}
     - id: publishSource
-      name: Publishing to Source Code Repository
-      action: publish:gitlab
+      name: Publishing to GitHub Repository
+      action: publish:github
       input:
-        sourcePath: ./source
+        repoUrl: github.com/lets2/${{parameters.repoName}}
         description: ${{parameters.description}}
-        repoUrl: gitlab-gitlab${{parameters.cluster_id}}?owner=${{parameters.gitlabGroup}}&repo=${{parameters.namespace}}-${{parameters.application_id}}
+        sourcePath: ./source
         defaultBranch: main
         protectDefaultBranch: false
         repoVisibility: public
+        token: ${{parameters.pat}}
     - id: templateGitops
       name: Generating the deployment resources and artefacts
       action: fetch:template
@@ -107,13 +108,13 @@ spec:
         url: ./manifests
         copyWithoutTemplating: []
         values:
-          git_host: gitlab-gitlab${{parameters.cluster_id}}
+          github_user: lets2
           component_id: ${{parameters.namespace}}-${{parameters.application_id}}
           description: ${{parameters.description}}
-          destination: https://gitlab-gitlab${{parameters.cluster_id}}/${{parameters.gitlabGroup}}/${{parameters.namespace}}-${{parameters.application_id}}-gitops.git
-          source_repository: https://gitlab-gitlab${{parameters.cluster_id}}/${{parameters.gitlabGroup}}/${{parameters.namespace}}-${{parameters.application_id}}.git
-          repository_name: ${{parameters.namespace}}-${{parameters.application_id}}
-          git_owner: ${{parameters.gitlabGroup}}
+          destination: https://github.com/lets2/${{parameters.repoName}}-gitops.git
+          source_repository: https://github.com/lets2/${{parameters.repoName}}.git
+          repository_name: ${{parameters.repoName}}
+          git_owner: lets2
           cluster: ${{parameters.cluster_id}}
           namespace: ${{parameters.namespace}}
           image_host: ${{parameters.image_host}}
@@ -122,16 +123,17 @@ spec:
           application_id: ${{parameters.application_id}}
         targetPath: ./tenant-gitops
     - id: publishGitops
-      name: Publishing to Deployment Resource Repository
-      action: publish:gitlab
+      name: Publishing to GitHub GitOps Repository
+      action: publish:github
       input:
-        repoUrl: gitlab-gitlab${{parameters.cluster_id}}?owner=${{parameters.gitlabGroup}}&repo=${{parameters.namespace}}-${{parameters.application_id}}-gitops
-        title: gitops resources for ${{parameters.namespace}}-poi-backend-app
-        description: gitops resources for ${{parameters.namespace}}-poi-backend-app
+        repoUrl: github.com/lets2/${{parameters.repoName}}-gitops
+        title: GitOps resources for ${{parameters.repoName}}
+        description: GitOps resources for ${{parameters.repoName}}
         sourcePath: ./tenant-gitops
         defaultBranch: main
         protectDefaultBranch: false
         repoVisibility: public
+        token: ${{parameters.pat}}
     - id: registerSource
       name: Register NestJS Service Component
       action: catalog:register
@@ -145,12 +147,12 @@ spec:
         appName: ${{parameters.namespace}}-${{parameters.application_id}}-bootstrap
         argoInstance: main
         namespace: janus-argocd
-        repoUrl: https://gitlab-gitlab${{parameters.cluster_id}}/${{parameters.gitlabGroup}}/${{parameters.namespace}}-${{parameters.application_id}}-gitops.git
+        repoUrl: https://github.com/lets2/${{parameters.repoName}}-gitops.git
         path: 'argocd/'
   output:
     links:
       - title: Source Code Repository
-        url: ${{steps.publishSource.output.remoteUrl}}
+        url: https://github.com/lets2/${{parameters.repoName}}
       - title: Pipeline status
         url: https://console-openshift-console${{parameters.cluster_id}}/dev-pipelines/ns/${{parameters.namespace}}/
       - title: Open NestJS Service Component
