@@ -94,7 +94,7 @@ spec:
       name: Publishing to GitHub Repository
       action: publish:github
       input:
-        repoUrl: github.com/lets2/${{parameters.repoName}}
+        repoUrl: lets2/${{parameters.repoName}}
         description: ${{parameters.description}}
         sourcePath: ./source
         defaultBranch: main
@@ -126,7 +126,7 @@ spec:
       name: Publishing to GitHub GitOps Repository
       action: publish:github
       input:
-        repoUrl: github.com/lets2/${{parameters.repoName}}-gitops
+        repoUrl: lets2/${{parameters.repoName}}-gitops
         title: GitOps resources for ${{parameters.repoName}}
         description: GitOps resources for ${{parameters.repoName}}
         sourcePath: ./tenant-gitops
